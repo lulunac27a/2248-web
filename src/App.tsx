@@ -267,7 +267,33 @@ export default function App() {
                         ? Math.floor(2 ** o.n / 1e24) + "Sp"
                         : o.n < 100
                           ? Math.floor(2 ** o.n / 1e27) + "O"
-                          : Math.floor(2 ** o.n / 1e30) + "N";
+                          : o.n < 110
+                            ? Math.floor(2 ** o.n / 1e30) + "N"
+                            : o.n < 120
+                              ? Math.floor(2 ** o.n / 1e33) + "D"
+                              : o.n < 130
+                                ? Math.floor(2 ** o.n / 1e36) + "UD"
+                                : o.n < 140
+                                  ? Math.floor(2 ** o.n / 1e39) + "DD"
+                                  : o.n < 150
+                                    ? Math.floor(2 ** o.n / 1e42) + "TD"
+                                    : o.n < 160
+                                      ? Math.floor(2 ** o.n / 1e45) + "QaD"
+                                      : o.n < 170
+                                        ? Math.floor(2 ** o.n / 1e48) + "Qid"
+                                        : o.n < 180
+                                          ? Math.floor(2 ** o.n / 1e51) + "SxD"
+                                          : o.n < 190
+                                            ? Math.floor(2 ** o.n / 1e54) +
+                                              "SpD"
+                                            : o.n < 200
+                                              ? Math.floor(2 ** o.n / 1e57) +
+                                                "OD"
+                                              : o.n < 210
+                                                ? Math.floor(2 ** o.n / 1e60) +
+                                                  "ND"
+                                                : Math.floor(2 ** o.n / 1e63) +
+                                                  "V";
     const down = (e: MouseEvent) => {
       console.log("down:", text, o);
       if (field) return;
