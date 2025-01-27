@@ -55,11 +55,21 @@ body {
 }
 
 @keyframes shake {
-    0% { transform: rotate(0deg); }
-   25% { transform: rotate(10deg); }
-   50% { transform: rotate(0deg); }
-   75% { transform: rotate(-10deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(10deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(-10deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .Field:hover {
@@ -78,7 +88,8 @@ body {
 .lines {
   position: absolute;
   z-index: -1;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   stroke-width: 1.8em;
   stroke: red;
   stroke-linecap: round;

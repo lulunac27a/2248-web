@@ -20,20 +20,18 @@ const colors = [
 ];
 
 export default function App() {
-
-  const [stats, setStats] = useState({ fields: 0, points: 0, start: Date.now(), max: 3, score: 0, maxScore: 0 });
   // config
   // color palette
   const [colortheme, setColortheme] = useLocalStorage({ key: 'colortheme', defaultValue: 3 });
-  const color = (n: number) => '#' + colors[(colortheme - 1) % colors.length][n - 1];
+  const color = (n: number) => '#' + colors[(colortheme-1) % colors.length][n - 1];
   // sound
   const waveforms = ['none', 'sine', 'square', 'triangle', 'sawtooth'] as const;
   type waveform = typeof waveforms[number];
   const [waveform, setWaveform] = useLocalStorage<waveform>({ key: 'waveform', defaultValue: 'triangle' });
 
   const min = 1;
-  let max = 3;
-  const rand = () => min + Math.floor(Math.random() * stats.max);
+  const max = 9;
+  const rand = () => min + Math.floor(Math.random() * max);
   // matrix of initial field values
   // const m = [
   //   [1, 1, 2, 10],
@@ -83,11 +81,11 @@ export default function App() {
     setFields(fields.slice(0, -1));
     const l = lines.slice(-1)[0];
     setLines(lines.slice(0, -1));
-    setField({ ...f, x: l.x1, y: l.y1 });
+    setField({...f, x: l.x1, y: l.y1});
     // console.log(2**f.n, fields.map(x => 2**x.n));
     return fr;
   };
-  const calcN = () => Math.floor(Math.log2(fields.reduce((a, f) => a + 2 ** f.n, 0))); // round or floor?
+  const calcN = () => Math.round(Math.log2(fields.reduce((a, f) => a + 2 ** f.n, 0))); // round or floor?
   const [curN, setCurN] = useState<number>();
   useEffect(() => setCurN(fields.length ? calcN() : undefined), [fields]);
 
@@ -95,7 +93,7 @@ export default function App() {
     const box = e.currentTarget.getBoundingClientRect();
     const x = (box.left + box.right) / 2;
     const y = (box.top + box.bottom) / 2;
-    return { x, y };
+    return {x, y};
   }
   const isSame = (a: fieldc, b: fieldc) =>
     a.row == b.row && a.col == b.col;
@@ -112,7 +110,7 @@ export default function App() {
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = waveform;
-    o.frequency.value = 110 * n;
+    o.frequency.value = 110*n;
     o.connect(g);
     g.connect(ctx.destination);
     o.start(0);
@@ -120,7 +118,7 @@ export default function App() {
   };
 
   const Field = (o: fieldc) => {
-    const text = (o.n < 10) ? 2 ** o.n : (o.n < 20) ? Math.floor(2 ** o.n / 1e3) + "K" : (o.n < 30) ? Math.floor(2 ** o.n / 1e6) + "M" : (o.n < 40) ? Math.floor(2 ** o.n / 1e9) + "B" : (o.n < 50) ? Math.floor(2 ** o.n / 1e12) + "T" : (o.n < 60) ? Math.floor(2 ** o.n / 1e15) + "Qd" : (o.n < 70) ? Math.floor(2 ** o.n / 1e18) + "Qt" : (o.n < 80) ? Math.floor(2 ** o.n / 1e21) + "Sx" : (o.n < 90) ? Math.floor(2 ** o.n / 1e24) + "Sp" : (o.n < 100) ? Math.floor(2 ** o.n / 1e27) + "O" : Math.floor(2 ** o.n / 1e30) + "N";
+    const text = 2 ** o.n;
     const down = (e: MouseEvent) => {
       console.log('down:', text, o);
       if (field) return;
@@ -129,15 +127,15 @@ export default function App() {
     const enter = (e: MouseEvent) => {
       if (!field) return;
       console.log('enter:', text, fields.map(x => 2 ** x.n), lines.length);
-      if (isNeighbor(field, o) && (o.n == field.n || (o.n == field.n + 1&&fields.length>1)) && !hasField(o)) {
+      if (isNeighbor(field, o) && (o.n == field.n || o.n == field.n + 1) && !hasField(o)) {
         const p = getCenter(e);
         addLine(line(field, p));
         addField({ ...o, ...p });
         playSound(o.n);
         console.log('added:', text);
-      } else if (fields.length >= 2 && isSame(o, fields[fields.length - 2])) {
+      } else if (fields.length >= 2 && isSame(o, fields[fields.length-2])) {
         const f = popField();
-        f && console.log('removed:', 2 ** f.n, 'at', text);
+        f && console.log('removed:', 2**f.n, 'at', text);
       }
     };
     const isCurrent = field && isSame(field, o);
@@ -163,6 +161,7 @@ export default function App() {
     // note that using useState would rerender and execute the enter above with every move...
     if (field) setLineRef(line(field, { x: e.clientX, y: e.clientY }));
   };
+  const [stats, setStats] = useState({fields: 0, points: 0, start: Date.now()});
   const up = (e: MouseEvent) => {
     console.log('up:', fields);
     setLines([]);
@@ -173,14 +172,13 @@ export default function App() {
     }
     // last field gets the sum of all values
     const l = fields.slice(-1)[0];
-
     const points = matrix[l.col][l.row] = calcN();
     setMatrix(matrix.map(c => {
       const r = c.filter(n => n != undefined); // have to remove deleted values which are just undefined
-      return Array(rows - r.length).fill(0).map(rand).concat(r); // prepend new random values in column
+      return Array(rows-r.length).fill(0).map(rand).concat(r); // prepend new random values in column
     }));
     // console.log(matrix);
-    setStats({ ...stats, fields: stats.fields + fields.length, points: stats.points + points, max: Math.max(max, points - 1), score: stats.score + 2 ** points, maxScore: stats.maxScore + 2 ** points * fields.length });
+    setStats({...stats, fields: stats.fields + fields.length, points: stats.points + points});
     setFields([]);
     setCurN(undefined);
   };
@@ -195,7 +193,7 @@ export default function App() {
           <NumberInput w="4rem" min={2} value={rows} onChange={v => v && setRows(v)} />
         </Group>
 
-        <NumberInput w="5rem" min={1} max={colors.length} value={colortheme} onChange={v => v && setColortheme(v)} icon={<IconColorFilter />} />
+        <NumberInput w="5rem" min={1} max={colors.length} value={colortheme} onChange={v => v && setColortheme(v)} icon={<IconColorFilter/>} />
 
         <Select
           // default ~ 14rem
@@ -204,26 +202,24 @@ export default function App() {
           data={waveforms}
           value={waveform}
           onChange={v => setWaveform(v as typeof waveforms[number])}
-        />
+          />
 
         <ColorSchemeToggle />
       </Group>
 
-      <div className="Fields" style={{ gridTemplateColumns: 'auto '.repeat(cols) }} onMouseMove={move} onMouseUp={up}>
+      <div className="Fields" style={{gridTemplateColumns: 'auto '.repeat(cols)}} onMouseMove={move} onMouseUp={up}>
         {Fields}
       </div>
 
       <Group position="center" className="stats">
-        {curN ? <>Result: <span className='stat'>{2 ** curN}</span></> :
-          <>
-            Duration: <span className='stat'>{duration(Date.now() - stats.start)}</span>
-            <Divider orientation="vertical" />
-            Cleared fields: <span className='stat'>{stats.fields}</span>
-            <Divider orientation="vertical" />
-            Points: <span className='stat'>{stats.points}</span><br/>
-            Score: <span className='stat'>{stats.score}</span><br/>
-            Max Score: <span className='stat'>{stats.maxScore}</span>
-          </>
+        {curN ? <>Result: <span className='stat'>{2**curN}</span></> :
+        <>
+          Duration: <span className='stat'>{duration(Date.now() - stats.start)}</span>
+          <Divider orientation="vertical" />
+          Cleared fields: <span className='stat'>{stats.fields}</span>
+          <Divider orientation="vertical" />
+          Points: <span className='stat'>{stats.points}</span>
+        </>
         }
       </Group>
 
